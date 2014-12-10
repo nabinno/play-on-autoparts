@@ -1,5 +1,5 @@
-How to Set-up Play on Autoparts
-================================
+How to Set-up Play framework on Autoparts
+=========================================
 INDEX
 -----
 1. Dependencies
@@ -59,15 +59,15 @@ foo@centos% sudo /etc/init.d/sshd restart
 ```
 
 
-3. Set-up Play2 on Autoparts/Ubuntu 12.04
-------------------------------------------
+3. Set-up Play framework on Autoparts/Ubuntu 12.04
+--------------------------------------------------
 ```sh
 ### build
 foo@centos% docker build -t nitrousio/autoparts-builder https://raw.githubusercontent.com/nitrous-io/autoparts/master/Dockerfile
 foo@centos% docker build -t nabinno/play-on-autoparts https://raw.githubusercontent.com/nabinno/play-on-autoparts/master/Dockerfile
 
 ### start sshd server
-foo@centos% docker run -t -d -P nabinno/play-on-autoparts /usr/sbin/sshd -D
+foo@centos% docker run -t -d -p 30000:3000 -P nabinno/play-on-autoparts /usr/sbin/sshd -D
 
 ### get port-playonubuntu
 foo@centos% docker inspect --format {{.NetworkSettings.IPAddress}} $(docker ps -l -q)
@@ -78,14 +78,9 @@ client# ssh-keygen -t rsa
 client# ssh-copy-id -i ~/.ssh/id_rsa.pub action@playonubuntu -p port-playonubuntu
 client# mv ~/.ssh/id_rsa ~/.ssh/id_rsa_action@playonubuntu
 client# ssh -t action@playonubuntu(centos.host) zsh -p port-playonubuntu
+action@playonubuntu# sudo sed -i "s/^\(#PasswordAuthentication yes\)/\1\nPasswordAuthentication no/g" /etc/ssh/sshd_config
+action@playonubuntu# echo 'action:baz' | sudo chpasswd
 foo@centos% docker commit $(docker ps -l -q) container_id
-foo@centos% docker run -i -t nabinno/play-on-autoparts zsh
-root@playonubuntu# sed -i "s/^\(#PasswordAuthentication yes\)/\1\nPasswordAuthentication no/g" /etc/ssh/sshd_config
-root@playonubuntu# echo 'action:baz' | chpasswd
-root@playonubuntu# /etc/init.d/ssh restart
-foo@centos% docker commit $(docker ps -l -q) container_id
-foo@centos% docker run -t -d -P nabinno/play-on-autoparts /usr/sbin/sshd -D
-client# ssh -t action@playonubuntu zsh -p port-playonubuntu
 ```
 
 
